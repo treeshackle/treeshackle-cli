@@ -1,0 +1,16 @@
+{
+  "compilerOptions": {
+    "allowSyntheticDefaultImports": true,
+    "esModuleInterop": true,
+    "jsx": "react",
+    "lib": ["es2017", "esnext", "dom"],
+    "noUnusedLocals": true,
+    "noUnusedParameters": true,
+    "strict": true,
+    "target": "es5",
+    "declaration": true,
+    "declarationDir": "lib"
+  },
+  "include": ["**/*.ts", "**/*.tsx"],
+  "exclude": ["lib", "test"]
+}
