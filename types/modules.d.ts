@@ -7,6 +7,11 @@ declare module "log-driver" {
 
 declare module "esm" {
   type ModuleRequire = (path: string) => any;
-
   export default function(mod: NodeModule): ModuleRequire;
+}
+
+declare module "unionfs" {
+  type IUnionFs = { use(fs: any): IUnionFs };
+  var Ufs: IUnionFs;
+  export default Ufs;
 }

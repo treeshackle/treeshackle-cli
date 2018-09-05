@@ -3,26 +3,14 @@ import chalk from "chalk";
 
 function formatLogging(level: string, ...messages: string[]) {
   let output = "";
-  switch (level) {
-    case "fail":
-      output += chalk.black.bgRed("fail");
-      break;
-    case "error":
-      output += chalk.red("erro");
-      break;
-    case "warn":
-      output += chalk.yellow("warn");
-      break;
-    case "info":
-      output += chalk.blue("info");
-      break;
-    case "debug":
-      output += chalk.bgGreen.black("debg");
-      break;
-    case "silly":
-      output += chalk.bgCyan.black("sill");
-      break;
-  }
+
+  if (level === "fail") output += chalk.black.bgRed("fail");
+  if (level === "error") output += chalk.red("erro");
+  if (level === "warn") output += chalk.yellow("warn");
+  if (level === "info") output += chalk.blue("info");
+  if (level === "debug") output += chalk.blue("debg");
+  if (level === "silly") output += chalk.blue("sill");
+
   return `${output}  ${messages.join("  ")}`;
 }
 

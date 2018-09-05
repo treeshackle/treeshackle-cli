@@ -14,4 +14,4 @@ yargs
 yargs
   .help()
   .alias("help", "h")
-  .showHelpOnFail(false, "Pass --help to list available commands");
+  .showHelpOnFail(false, "Pass --help to list available commands").argv;
