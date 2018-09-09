@@ -10,10 +10,12 @@ import {
   createReport,
   diffReport,
   generateLockfile,
+  getExportType,
   ILockfile
 } from "./lockfile";
 import { LOCKFILE_NAME, LOCKFILE_PATH, WORK_DIR } from "./consts";
 import { pluralize } from "../../utils";
+import chalk from "chalk";
 
 const requireModule = esm(module);
 
@@ -63,13 +65,14 @@ export const command: CommandModule = {
       const reportDiff = diffReport(previousReport.exports, exportsReport);
 
       spinner.stop();
-      if (reportDiff.length > 1) {
+      if (reportDiff.length > 0) {
         logger.error(`Running in CI mode: ${LOCKFILE_NAME} is inconsistent.`);
         logger.error("Exiting...");
         console.log(reportDiff); // TODO: Super basic diffs to start with
         process.exit(1);
       }
       logger.info("Lockfile is consistent: Passing...");
+      process.exit(0);
     }
 
     if (args.write) {
@@ -79,7 +82,10 @@ export const command: CommandModule = {
     } else {
       spinner.stop();
       sizedLibExports.forEach(def => {
-        console.log(`${def.name.padEnd(35, " ")} = ${prettyBytes(def.size)}`);
+        const width = 50 - def.name.length;
+        console.log(
+          `${def.name}${chalk.gray(".".repeat(width))}${prettyBytes(def.size)}`
+        );
       });
     }
   }
@@ -105,5 +111,8 @@ function resolveModuleExports(nodeModule: {
   [libExport: string]: any;
 }): ILibraryDefinition[] {
   const libExports = Object.keys(nodeModule).sort();
-  return libExports.map(name => ({ name, type: typeof nodeModule[name] }));
+  return libExports.map(name => ({
+    name,
+    type: getExportType(nodeModule[name])
+  }));
 }

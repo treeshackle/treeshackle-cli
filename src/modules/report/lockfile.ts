@@ -46,9 +46,12 @@ export type ExportChange =
 export function diffReport(prev: IExportReport, next: IExportReport) {
   const changes: ExportChange[] = [];
 
-  const uniqueExports = new Set([...Object.keys(prev), ...Object.keys(next)]);
+  const uniqueExports: Set<string> = new Set([
+    ...Object.keys(prev),
+    ...Object.keys(next)
+  ]);
 
-  for (let exportName of Array.from(uniqueExports.values())) {
+  for (let exportName of uniqueExports) {
     switch (true) {
       case typeof prev[exportName] === "undefined": {
         changes.push({
@@ -66,6 +69,7 @@ export function diffReport(prev: IExportReport, next: IExportReport) {
         });
         break;
       }
+      case prev[exportName].type !== next[exportName].type:
       case prev[exportName].size !== next[exportName].size: {
         changes.push({
           type: "change",
@@ -90,4 +94,12 @@ export function generateLockfile(report: IExportReport) {
     null,
     2
   );
+}
+
+export function getExportType(libExport: any): string {
+  switch (true) {
+    default: {
+      return typeof libExport;
+    }
+  }
 }

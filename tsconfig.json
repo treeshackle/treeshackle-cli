@@ -3,14 +3,16 @@
     "allowSyntheticDefaultImports": true,
     "esModuleInterop": true,
     "resolveJsonModule": true,
+    "moduleResolution": "node",
     "jsx": "react",
     "lib": ["es2017", "esnext", "dom"],
     "noUnusedLocals": true,
     "noUnusedParameters": true,
     "strict": true,
-    "target": "es5",
+    "target": "ESNext",
     "declaration": true,
-    "declarationDir": "lib"
+    "declarationDir": "lib",
+    "module": "commonjs"
   },
   "include": ["**/*.ts", "**/*.tsx"],
   "exclude": ["lib", "test"]
