@@ -61,7 +61,7 @@ Array [
 exports[`generateLockfile should match the lockfile snapshot 1`] = `
 "{
   \\"treeshackle\\": {
-    \\"version\\": \\"1.0.3\\"
+    \\"version\\": \\"1.0.0-test\\"
   },
   \\"exports\\": {
     \\"fooBar\\": {
