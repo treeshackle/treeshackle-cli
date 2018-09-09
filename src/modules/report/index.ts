@@ -41,6 +41,7 @@ export const command: CommandModule = {
   async handler(args) {
     const moduleExports = await getPackageJson(WORK_DIR)
       .then(resolveModulePath)
+      .then(resolveRequirePath)
       .then(requireModule)
       .then(resolveModuleExports);
 
@@ -105,6 +106,10 @@ function resolveModulePath(packageJson: PackageJson): string {
   logger.warn("No ES6 module definition in 'package.json'.");
   logger.warn("Falling back to default module resolution.");
   return WORK_DIR;
+}
+
+function resolveRequirePath(modulePath: string) {
+  return path.resolve(WORK_DIR, modulePath);
 }
 
 function resolveModuleExports(nodeModule: {
