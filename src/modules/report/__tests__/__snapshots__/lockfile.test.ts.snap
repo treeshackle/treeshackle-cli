@@ -1,0 +1,81 @@
+// Jest Snapshot v1, https://goo.gl/fbAQLP
+
+exports[` 1`] = `
+Object {
+  "bar": Object {
+    "size": "987 B",
+    "type": "function",
+  },
+  "foo": Object {
+    "size": "12.3 kB",
+    "type": "function",
+  },
+}
+`;
+
+exports[`diffReport should match the diff snapshot 1`] = `
+Array [
+  Object {
+    "after": Object {
+      "size": "2.81 kB",
+      "type": "function",
+    },
+    "before": Object {
+      "size": "1.81 kB",
+      "type": "function",
+    },
+    "name": "fooBar",
+    "type": "change",
+  },
+  Object {
+    "after": Object {
+      "size": "5.81 kB",
+      "type": "string",
+    },
+    "before": Object {
+      "size": "5.81 kB",
+      "type": "function",
+    },
+    "name": "bazBar",
+    "type": "change",
+  },
+  Object {
+    "export": Object {
+      "size": "12.3 kB",
+      "type": "function",
+    },
+    "name": "test",
+    "type": "addition",
+  },
+  Object {
+    "export": Object {
+      "size": "480 B",
+      "type": "string",
+    },
+    "name": "bangBox",
+    "type": "removal",
+  },
+]
+`;
+
+exports[`generateLockfile should match the lockfile snapshot 1`] = `
+"{
+  \\"treeshackle\\": {
+    \\"version\\": \\"1.0.3\\"
+  },
+  \\"exports\\": {
+    \\"fooBar\\": {
+      \\"size\\": \\"1.81 kB\\",
+      \\"type\\": \\"function\\"
+    },
+    \\"bazBar\\": {
+      \\"size\\": \\"5.81 kB\\",
+      \\"type\\": \\"function\\"
+    },
+    \\"test\\": {
+      \\"size\\": \\"12.3 kB\\",
+      \\"type\\": \\"function\\"
+    }
+  }
+}"
+`;
