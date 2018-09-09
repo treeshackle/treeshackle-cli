@@ -1,4 +1,4 @@
-.PHONY: test-ci clean install
+.PHONY: clean install test build publish test-ci
 
 clean:
 	rm -rf coverage lib
@@ -6,6 +6,22 @@ clean:
 install:
 	yarn
 
-test-ci:
+test:
 	yarn test --coverage
+	yarn type-check
+
+build:
+	yarn build
+	yarn type-emit
+
+publish:
+	make clean
+	make install
+	make build
+	yarn publish
+
+
+# CI
+test-ci:
+	make test
 	curl -s https://codecov.io/bash | bash -s - -f coverage/coverage-final.json
