@@ -1,5 +1,5 @@
 module.exports = {
-  collectCoverageFrom: ["src/**/*.{ts,tsx,js,jsx}", "!**/__tests__/**"],
+  collectCoverageFrom: ["src/**/*.{ts,tsx}", "!**/__tests__/**"],
   globals: {
     __DEV__: process.env.NODE_ENV !== "production"
   },
