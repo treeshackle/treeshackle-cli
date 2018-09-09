@@ -1,6 +1,6 @@
 {
   "name": "treeshackle",
-  "version": "1.0.3",
+  "version": "1.0.4",
   "description": "Generate a report of the size of your library components after treeshaking and minifying. Gain visibility on the performance/size impact of your library to consumers.",
   "contributors": [
     "Max Bush <max@startlab.tech>",

@@ -18,7 +18,7 @@ publish:
 	make clean
 	make install
 	make build
-	yarn publish
+	yarn publish --non-interactive
 
 
 # CI
