@@ -6,6 +6,9 @@
     "Max Bush <max@startlab.tech>",
     "Tom Lingham <tjlingham@gmail.com> (https://tomlingham.com)"
   ],
+  "publishConfig": {
+    "access": "public"
+  },
   "scripts": {
     "build": "babel --extensions .ts,.tsx --delete-dir-on-start -Dd lib src",
     "build:watch": "yarn build --watch",
