@@ -25,8 +25,20 @@ export interface ISizedLibraryExport extends ILibraryExport {
   size: number;
 }
 
+// This should be customiseable
+const excludeExternals = ["react", "react-dom", "styled-components"];
+
 const webpackConfig: webpack.Configuration = {
-  externals: [/^[^\.\/].+$/],
+  externals: [
+    (context, request, callback) => {
+      logger.silly({ request, context });
+      if (excludeExternals.includes(request)) {
+        callback(null, "commonjs " + request);
+      } else {
+        callback(null, undefined);
+      }
+    }
+  ],
   target: "node",
   context: WORK_DIR,
   mode: "production",
@@ -38,11 +50,10 @@ const webpackConfig: webpack.Configuration = {
   output: {
     path: FILES_DIR_OUT
   },
-  resolve: {
-    mainFields: ["module"]
-  },
   cache: false
 };
+
+logger.silly({ FILES_DIR_OUT, FILES_DIR_IN });
 
 export async function compile(
   exportsList: ILibraryDefinition[],
@@ -61,6 +72,7 @@ export async function compile(
 
   for (let { inpath, file, name } of exportDefinitions) {
     logger.silly("Write input file to memory fs", inpath);
+    logger.silly("File Content", file);
     memfs.writeFileSync(inpath, file);
     entries[name] = inpath;
   }
@@ -77,13 +89,20 @@ export async function compile(
   compiler.outputFileSystem = memfs as any; // TODO: Where is the purge method on memory-fs?
 
   logger.debug("Initializing webpack compiler");
-  await new Promise((resolve, reject) =>
-    compiler.run((error, stats) => {
-      logger.debug("Webpack compilation complete");
-      if (error) reject(error);
-      else resolve(stats);
-    })
-  );
+  try {
+    const stats = await new Promise((resolve, reject) =>
+      compiler.run((error, stats) => {
+        logger.debug("Webpack compilation complete");
+        if (error) reject(error);
+        else resolve(stats);
+      })
+    );
+
+    logger.silly("Webpack stats", stats);
+  } catch (error) {
+    logger.error("Compilation error", error);
+    throw error;
+  }
 
   const sizedExports: ISizedLibraryExport[] = [];
   logger.debug("Measuring size of compiled output files for each export");
@@ -91,6 +110,7 @@ export async function compile(
     try {
       logger.silly("Reading compiled file from memory fs", definition.outpath);
       const file = memfs.readFileSync(definition.outpath) as Buffer;
+      //logger.silly("File content", file);
       logger.silly("Measure size of file", definition.outpath, file.byteLength);
       sizedExports.push({ ...definition, size: file.byteLength });
     } catch (error) {

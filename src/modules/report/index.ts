@@ -4,6 +4,7 @@ import ora from "ora";
 import path from "path";
 import prettyBytes from "pretty-bytes";
 import { CommandModule } from "yargs";
+import chalk from "chalk";
 import { logger } from "../../logger";
 import { compile, ILibraryDefinition } from "./compiler";
 import {
@@ -11,13 +12,54 @@ import {
   diffReport,
   generateLockfile,
   getExportType,
-  ILockfile
+  ILockfile,
+  ExportChange
 } from "./lockfile";
 import { LOCKFILE_NAME, LOCKFILE_PATH, WORK_DIR } from "./consts";
-import { pluralize } from "../../utils";
-import chalk from "chalk";
+import { pluralize, fromByteString } from "../../utils";
 
 const requireModule = esm(module);
+
+function formatReportItem(change: ExportChange) {
+  switch (change.type) {
+    case "addition": {
+      return `ADDED\n name: ${change.name}\n type: ${
+        change.export.type
+      }\n size: ${change.export.size}\n`;
+    }
+    case "removal": {
+      return `REMOVED\n name: ${change.name}\n type: ${
+        change.export.type
+      }\n size: ${change.export.size}\n`;
+    }
+    case "change": {
+      const before = {
+        ...change.before,
+        size: fromByteString(change.before.size)
+      };
+      const after = {
+        ...change.after,
+        size: fromByteString(change.after.size)
+      };
+
+      const diffSize = prettyBytes(Math.abs(after.size - before.size));
+      if (after.size > before.size) {
+        return chalk.red(
+          `INCREASE\n name: ${change.name}\n type: ${
+            change.after.type
+          }\n diff: ${diffSize}\n size: ${change.after.size}\n`
+        );
+      }
+      if (after.size < before.size) {
+        return chalk.green(
+          `DECREASE\n name: ${change.name}\n type: ${
+            change.after.type
+          }\n diff: ${diffSize}\n size: ${change.after.size}\n`
+        );
+      }
+    }
+  }
+}
 
 export const command: CommandModule = {
   command: ["report", "*"],
@@ -41,6 +83,7 @@ export const command: CommandModule = {
   async handler(args) {
     const moduleExports = await getPackageJson(WORK_DIR)
       .then(resolveModulePath)
+      .catch()
       .then(resolveRequirePath)
       .then(requireModule)
       .then(resolveModuleExports);
@@ -69,7 +112,7 @@ export const command: CommandModule = {
       if (reportDiff.length > 0) {
         logger.error(`Running in CI mode: ${LOCKFILE_NAME} is inconsistent.`);
         logger.error("Exiting...");
-        console.log(reportDiff); // TODO: Super basic diffs to start with
+        reportDiff.map(formatReportItem).forEach(result => console.log(result));
         process.exit(1);
       }
       logger.info("Lockfile is consistent: Passing...");
@@ -96,11 +139,13 @@ async function getPackageJson(dir: string): Promise<PackageJson> {
   try {
     return <PackageJson>await fs.readJson(path.resolve(dir, "package.json"));
   } catch (error) {
-    throw new Error("Unable to find 'package.json'.");
+    logger.error("Unable to fine 'package.json'. Falling back to current dir.");
+    throw error;
   }
 }
 
-function resolveModulePath(packageJson: PackageJson): string {
+function resolveModulePath(packageJson?: PackageJson): string {
+  if (!packageJson) return WORK_DIR;
   if (packageJson.module) return packageJson.module;
   if (packageJson["jsnext:main"]) return packageJson["jsnext:main"] as string;
   logger.warn("No ES6 module definition in 'package.json'.");

@@ -1,17 +1,31 @@
 import LogDriver from "log-driver";
 import chalk from "chalk";
 
-function formatLogging(level: string, ...messages: string[]) {
+type Loggable = Object | string;
+
+function stringify(value: Loggable): string {
+  if (typeof value === "object") {
+    try {
+      return JSON.stringify(value);
+    } catch (e) {
+      return value.toString();
+    }
+  }
+
+  return value;
+}
+
+function formatLogging(level: string, ...messages: Loggable[]) {
   let output = "";
 
-  if (level === "fail") output += chalk.black.bgRed("fail");
-  if (level === "error") output += chalk.red("erro");
-  if (level === "warn") output += chalk.yellow("warn");
-  if (level === "info") output += chalk.blue("info");
-  if (level === "debug") output += chalk.blue("debg");
-  if (level === "silly") output += chalk.blue("sill");
+  if (level === "fail") output += chalk.black.bgRed("FAIL");
+  if (level === "error") output += chalk.red("ERRO");
+  if (level === "warn") output += chalk.yellow("WARN");
+  if (level === "info") output += chalk.blue("INFO");
+  if (level === "debug") output += chalk.blue("DEBG");
+  if (level === "silly") output += chalk.black.bgBlue("SILL");
 
-  return `${output}  ${messages.join("  ")}`;
+  return `${output}  ${messages.map(stringify).join("  ")}`;
 }
 
 export const logger = LogDriver({

@@ -55,7 +55,7 @@ export function diffReport(prev: IExportReport, next: IExportReport) {
     switch (true) {
       case typeof prev[exportName] === "undefined": {
         changes.push({
-          type: "removal",
+          type: "addition",
           name: exportName,
           export: next[exportName]
         });
@@ -63,7 +63,7 @@ export function diffReport(prev: IExportReport, next: IExportReport) {
       }
       case typeof next[exportName] === "undefined": {
         changes.push({
-          type: "addition",
+          type: "removal",
           name: exportName,
           export: prev[exportName]
         });
