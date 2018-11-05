@@ -45,7 +45,7 @@ Array [
       "type": "function",
     },
     "name": "test",
-    "type": "addition",
+    "type": "removal",
   },
   Object {
     "export": Object {
@@ -53,7 +53,7 @@ Array [
       "type": "string",
     },
     "name": "bangBox",
-    "type": "removal",
+    "type": "addition",
   },
 ]
 `;
