@@ -21,7 +21,7 @@ function formatLogging(level: string, ...messages: Loggable[]) {
   if (level === "fail") output += chalk.black.bgRed("FAIL");
   if (level === "error") output += chalk.red("ERRO");
   if (level === "warn") output += chalk.yellow("WARN");
-  if (level === "info") output += chalk.blue("INFO");
+  if (level === "info") output += chalk.green("INFO");
   if (level === "debug") output += chalk.blue("DEBG");
   if (level === "silly") output += chalk.black.bgBlue("SILL");
 
@@ -30,6 +30,7 @@ function formatLogging(level: string, ...messages: Loggable[]) {
 
 export const logger = LogDriver({
   levels: ["fail", "error", "warn", "info", "debug", "silly"],
-  level: process.env.LOG_LEVEL || "info",
+  level:
+    process.env.LOG_LEVEL || process.env.NODE_ENV === "test" ? false : "info",
   format: formatLogging
 });

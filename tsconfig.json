@@ -2,18 +2,18 @@
   "compilerOptions": {
     "allowSyntheticDefaultImports": true,
     "esModuleInterop": true,
-    "resolveJsonModule": true,
-    "moduleResolution": "node",
+    "declaration": true,
     "jsx": "react",
-    "lib": ["es2017", "esnext", "dom"],
+    "lib": ["es2017", "esnext"],
+    "moduleResolution": "node",
     "noUnusedLocals": true,
     "noUnusedParameters": true,
+    "resolveJsonModule": true,
     "strict": true,
     "target": "ESNext",
-    "declaration": true,
-    "declarationDir": "lib",
-    "module": "commonjs"
+    "outDir": "lib",
+    "skipLibCheck": true
   },
-  "include": ["**/*.ts", "**/*.tsx"],
-  "exclude": ["lib", "test"]
+  "include": ["**/*.ts", "**/*.tsx", "**/*.json"],
+  "exclude": ["lib"]
 }

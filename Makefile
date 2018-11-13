@@ -7,12 +7,12 @@ install:
 	yarn
 
 test:
+	yarn type:check
 	yarn test --coverage
-	yarn type-check
 
 build:
 	yarn build
-	yarn type-emit
+	yarn type:emit
 
 publish:
 	make clean

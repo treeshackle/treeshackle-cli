@@ -5,7 +5,7 @@ module.exports = {
   },
   moduleFileExtensions: ["ts", "tsx", "js", "jsx"],
   testEnvironment: "node",
-  testMatch: ["<rootDir>/**/__tests__/**/*.test.ts?(x)"],
+  testMatch: ["<rootDir>/src/**/__tests__/**/*.test.ts?(x)"],
   transform: {
     "^.+\\.(ts|tsx)$": "babel-jest"
   }

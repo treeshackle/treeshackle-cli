@@ -12,53 +12,33 @@ import {
   diffReport,
   generateLockfile,
   getExportType,
-  ILockfile,
-  ExportChange
+  ILockfile
 } from "./lockfile";
 import { LOCKFILE_NAME, LOCKFILE_PATH, WORK_DIR } from "./consts";
-import { pluralize, fromByteString } from "../../utils";
+import { pluralize, disableStdio, enableStdio } from "../../utils";
+import { ConfigProvider } from "./config";
+import { formatReportItem } from "./view";
 
 const requireModule = esm(module);
 
-function formatReportItem(change: ExportChange) {
-  switch (change.type) {
-    case "addition": {
-      return `ADDED\n name: ${change.name}\n type: ${
-        change.export.type
-      }\n size: ${change.export.size}\n`;
-    }
-    case "removal": {
-      return `REMOVED\n name: ${change.name}\n type: ${
-        change.export.type
-      }\n size: ${change.export.size}\n`;
-    }
-    case "change": {
-      const before = {
-        ...change.before,
-        size: fromByteString(change.before.size)
-      };
-      const after = {
-        ...change.after,
-        size: fromByteString(change.after.size)
-      };
-
-      const diffSize = prettyBytes(Math.abs(after.size - before.size));
-      if (after.size > before.size) {
-        return chalk.red(
-          `INCREASE\n name: ${change.name}\n type: ${
-            change.after.type
-          }\n diff: ${diffSize}\n size: ${change.after.size}\n`
-        );
-      }
-      if (after.size < before.size) {
-        return chalk.green(
-          `DECREASE\n name: ${change.name}\n type: ${
-            change.after.type
-          }\n diff: ${diffSize}\n size: ${change.after.size}\n`
-        );
-      }
-    }
+function silentlyEvaluateModule(file: string) {
+  disableStdio();
+  let result;
+  let error = null;
+  try {
+    result = requireModule(file);
+  } catch (e) {
+    error = e;
+  } finally {
+    enableStdio();
   }
+
+  if (error != null) {
+    logger.error("There was an error evaluating module.", error);
+    throw error;
+  }
+
+  return result;
 }
 
 export const command: CommandModule = {
@@ -81,37 +61,36 @@ export const command: CommandModule = {
     }
   },
   async handler(args) {
+    const config = await ConfigProvider.get(WORK_DIR);
     const moduleExports = await getPackageJson(WORK_DIR)
+      .catch(() => logger.error("erer"))
       .then(resolveModulePath)
-      .catch()
       .then(resolveRequirePath)
-      .then(requireModule)
+      .then(silentlyEvaluateModule)
       .then(resolveModuleExports);
 
-    const exportTerm = pluralize("export", moduleExports.length);
-    const units = `${moduleExports.length} ${exportTerm}`;
+    const unit = pluralize("export", moduleExports.length);
+    const exportUnits = `${moduleExports.length} ${unit}`;
 
-    logger.info(`Found ${units}`);
+    logger.info(`Found ${exportUnits}`);
     const spinner = ora("Analyzing module...").start();
-    const sizedLibExports = await compile(moduleExports, (progress: number) => {
-      spinner.text = `${Math.round(progress * 100)}% Compiling ${units}.`;
-    });
+    const sizedLibExports = await compile(
+      moduleExports,
+      config,
+      (p: number) => {
+        spinner.text = `${Math.round(p * 100)}% Compiling ${exportUnits}.`;
+      }
+    );
 
     const exportsReport = createReport(sizedLibExports);
 
     if (args.ci) {
-      // Running in CI mode...
-      const previousLockfile = await fs
-        .readFile(LOCKFILE_PATH)
-        .then(buffer => buffer.toString());
-
-      const previousReport: ILockfile = JSON.parse(previousLockfile);
+      const previousReport: ILockfile = await fs.readJSON(LOCKFILE_PATH);
       const reportDiff = diffReport(previousReport.exports, exportsReport);
-
       spinner.stop();
+
       if (reportDiff.length > 0) {
-        logger.error(`Running in CI mode: ${LOCKFILE_NAME} is inconsistent.`);
-        logger.error("Exiting...");
+        logger.info(`Running in CI mode: ${LOCKFILE_NAME} is inconsistent.`);
         reportDiff.map(formatReportItem).forEach(result => console.log(result));
         process.exit(1);
       }
@@ -139,15 +118,15 @@ async function getPackageJson(dir: string): Promise<PackageJson> {
   try {
     return <PackageJson>await fs.readJson(path.resolve(dir, "package.json"));
   } catch (error) {
-    logger.error("Unable to fine 'package.json'. Falling back to current dir.");
+    logger.error("Unable to find 'package.json'. Falling back to current dir.");
     throw error;
   }
 }
 
-function resolveModulePath(packageJson?: PackageJson): string {
+function resolveModulePath(packageJson: PackageJson | void): string {
   if (!packageJson) return WORK_DIR;
   if (packageJson.module) return packageJson.module;
-  if (packageJson["jsnext:main"]) return packageJson["jsnext:main"] as string;
+  if (packageJson["jsnext:main"]) return packageJson["jsnext:main"];
   logger.warn("No ES6 module definition in 'package.json'.");
   logger.warn("Falling back to default module resolution.");
   return WORK_DIR;
